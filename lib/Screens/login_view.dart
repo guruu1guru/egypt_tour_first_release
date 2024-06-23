@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:guru/Screens/tour_guide_success.dart';
 import 'package:guru/core/component/custom_text_form_field.dart';
 import 'package:guru/core/component/form_for_register_tourist.dart';
 import 'package:guru/core/component/show_list_cities_dialog.dart';
@@ -137,6 +138,13 @@ class _LoginViewState extends State<LoginView> {
                                   content:
                                       Text('Form submitted successfully!')),
                             );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TourGuideSuccessWidget(),
+                              ),
+                            );
+
                           } else if (state is TourGuideFailure) {
                             // Dismiss the loading indicator
                             Navigator.of(context).pop();
@@ -273,6 +281,7 @@ class _LoginViewState extends State<LoginView> {
                                       context
                                           .read<TourGuideCubit>()
                                           .addTourGuide();
+
                                     }
                                   },
                                 ),

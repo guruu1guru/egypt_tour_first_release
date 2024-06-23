@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:guru/Screens/home_screen.dart';
 import 'package:guru/Screens/tour_guides.dart';
 
-class TourGuideSuccess extends StatelessWidget {
-  const TourGuideSuccess({super.key});
+class TourGuideSuccessWidget extends StatelessWidget {
+  const TourGuideSuccessWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

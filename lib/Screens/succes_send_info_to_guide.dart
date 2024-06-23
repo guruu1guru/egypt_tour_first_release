@@ -94,7 +94,7 @@ class Success extends StatelessWidget {
                             width: 8,
                           ),
                           Text(
-                            "[$tourGuideName]",
+                            "$tourGuideName",
                             style: const TextStyle(
                               fontSize: 18,
                               color: Color.fromARGB(255, 1, 61, 58),
@@ -117,7 +117,7 @@ class Success extends StatelessWidget {
                             width: 8,
                           ),
                           Text(
-                            "[$tourGuidePhoneNumber]",
+                            "$tourGuidePhoneNumber",
                             style: const  TextStyle(
                               fontSize: 18,
                               color: Color.fromARGB(255, 1, 61, 58),
@@ -189,7 +189,7 @@ class Success extends StatelessWidget {
                             width: 8,
                           ),
                           Text(
-                            "[$touristName]",
+                            "$touristName",
                             style: const TextStyle(
                               fontSize: 18,
                               color: Color.fromARGB(255, 1, 61, 58),
@@ -214,7 +214,7 @@ class Success extends StatelessWidget {
                             width: 8,
                           ),
                            Text(
-                            "[$touristPhoneNumber]",
+                            "$touristPhoneNumber",
                             style: const TextStyle(
                               fontSize: 18,
                               color: Color.fromARGB(255, 1, 61, 58),
@@ -239,7 +239,7 @@ class Success extends StatelessWidget {
                             width: 8,
                           ),
                            Text(
-                            "[$touristEmail]",
+                            "$touristEmail",
                             style: const TextStyle(
                               fontSize: 18,
                               color: Color.fromARGB(255, 1, 61, 58),
@@ -264,7 +264,7 @@ class Success extends StatelessWidget {
                             width: 8,
                           ),
                           Text(
-                            "[$touristDate]",
+                            "$touristDate",
                             style: const TextStyle(
                               fontSize: 18,
                               color: Color.fromARGB(255, 1, 61, 58),
