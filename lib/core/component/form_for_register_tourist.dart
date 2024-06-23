@@ -1,15 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:guru/Screens/contact_tour_with_phone.dart';
+import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
+import 'package:intl/intl.dart'; // Import the intl package
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:lottie/lottie.dart';
 import 'package:guru/core/component/custom_text_form_field.dart';
 import 'package:guru/core/utils/colors_app.dart';
 import 'package:guru/core/utils/custom_text_button.dart';
 import 'package:guru/core/utils/styles.dart';
 import 'package:guru/logic/tourist/add_tourist_cubit.dart';
 import 'package:guru/logic/tourist/add_tourist_state.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:guru/Screens/contact_tour_with_phone.dart';
+
+class CustomDateFormField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final FormFieldValidator<String>? validator;
+
+  CustomDateFormField({
+    required this.controller,
+    required this.hintText,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        DateTime? selectedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime(2101),
+        );
+        if (selectedDate != null) {
+          controller.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+        }
+      },
+      child: AbsorbPointer(
+        child: TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hintText,
+          ),
+          validator: validator,
+        ),
+      ),
+    );
+  }
+}
 
 class FormForRegisterTourist extends StatefulWidget {
   final String tourGuideName;
@@ -26,12 +66,12 @@ class FormForRegisterTourist extends StatefulWidget {
 }
 
 class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
-  bool formSubmitted = false; // Flag to track if form has been submitted
+  bool formSubmitted = false;
 
   @override
   void initState() {
     super.initState();
-    checkFormSubmissionStatus();
+    // checkFormSubmissionStatus();
   }
 
   Future<void> checkFormSubmissionStatus() async {
@@ -47,11 +87,21 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
     await prefs.setBool('formSubmitted', true);
   }
 
+  Future<void> _launchWhatsApp(String phoneNumber, String message) async {
+    final Uri whatsappUri = Uri.parse(
+        'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}');
+    if (await canLaunchUrl(whatsappUri)) {
+      await launchUrl(whatsappUri);
+    } else {
+      throw 'Could not launch $whatsappUri';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     if (formSubmitted) {
-      return Container(); // Return an empty container if form has been submitted
+      return Container();
     }
 
     return SafeArea(
@@ -65,7 +115,6 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
         body: BlocListener<AddTouristCubit, TouristState>(
           listener: (context, state) {
             if (state is TouristLoading) {
-              // Show loading indicator
               showDialog(
                 context: context,
                 builder: (context) => const Center(
@@ -73,11 +122,9 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
                 ),
               );
             } else if (state is TouristSuccess) {
-              // Hide loading indicator and show success message
-              Navigator.pop(context); // To dismiss the loading dialog
-              saveFormSubmissionStatus(); // Save form submission status
+              Navigator.pop(context);
+              saveFormSubmissionStatus();
               Navigator.pushReplacement(
-                // PushReplacement to prevent going back to this page
                 context,
                 MaterialPageRoute(
                   builder: (context) => ContactTourWithPhone(
@@ -87,8 +134,7 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
                 ),
               );
             } else if (state is TouristFailure) {
-              // Hide loading indicator and show error message
-              Navigator.pop(context); // To dismiss the loading dialog
+              Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error: ${state.error}')),
               );
@@ -150,7 +196,6 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your email';
                             }
-                            // Regex pattern to validate email addresses
                             if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
                                 .hasMatch(value)) {
                               return 'Please enter a valid email address';
@@ -159,34 +204,34 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
                           },
                         ),
                         const SizedBox(height: 20),
-                        IntlPhoneField(
-                          controller: context
-                              .read<AddTouristCubit>()
-                              .whatsAppNumberController,
-                          decoration: InputDecoration(
-                            hintText: "WhatsApp Number",
-                            filled: true,
-                            hintStyle: Styles.font14BlueSemiBold(context),
-                            fillColor: ColorsApp.moreLightGrey,
-                            border: UnderlineInputBorder(
-                              borderSide: BorderSide(),
-                            ),
+                      IntlPhoneField(
+                        controller: context.read<AddTouristCubit>().whatsAppNumberController,
+                        decoration: InputDecoration(
+                          hintText: "WhatsApp Number",
+                          filled: true,
+                          hintStyle: Styles.font14BlueSemiBold(context), // Adjust as per your project structure
+                          fillColor: ColorsApp.moreLightGrey, // Adjust as per your project structure
+                          border: UnderlineInputBorder(
+                            borderSide: BorderSide(),
                           ),
-                          initialCountryCode: 'EG', // Default to Egypt
-                          onChanged: (phone) {
-                            print(phone
-                                .completeNumber); // Use this to get the full phone number
-                          },
-                          onCountryChanged: (country) {
-                            print('Country changed to: ' + country.name);
-                          },
-                          validator: (phone) {
-                            if (phone == null || phone.completeNumber.isEmpty) {
-                              return 'Please enter your WhatsApp number';
-                            }
-                            return null;
-                          },
                         ),
+                        initialCountryCode: 'EG', // Initial country code for Egypt
+                        onChanged: (phone) {
+                          print(phone.completeNumber);
+                          context.read<AddTouristCubit>().selectedCountryCodeController.text = '${phone.countryCode}';
+                        },
+                        onCountryChanged: (phone) {
+                          print('Country changed to: ' + phone.name);
+                          context.read<AddTouristCubit>().selectedCountryCodeController.text = '${phone.code}';
+                        },
+                        validator: (phone) {
+                          if (phone == null || phone.completeNumber.isEmpty) {
+                            return 'Please enter your WhatsApp number';
+                          }
+                          return null;
+                        },
+                      ),
+                        const SizedBox(height: 20),
                         CustomTextFormField(
                           controller: context
                               .read<AddTouristCubit>()
@@ -196,12 +241,22 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your phone number';
                             }
-
-                            // Check if the phone number starts with '01' and has exactly 11 digits in total
                             if (!RegExp(r'^01[0-9]{9}$').hasMatch(value)) {
                               return 'Please enter a valid Egyptian phone number starting with 01';
                             }
-
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        CustomDateFormField(
+                          controller: context
+                              .read<AddTouristCubit>()
+                              .touristDateController,
+                          hintText: "Select Date",
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select a date';
+                            }
                             return null;
                           },
                         ),
@@ -213,35 +268,28 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
                             textStyle: Styles.font14LightGreyRegular(context),
                             backgroundColor: ColorsApp.darkPrimary,
                             onPressed: () async {
-                              // Save tourist data to SharedPreferences
-                              SharedPreferences prefs =
-                                  await SharedPreferences.getInstance();
-                              await prefs.setString(
-                                  'name',
-                                  context
-                                      .read<AddTouristCubit>()
-                                      .touristNameController
-                                      .text);
-                              await prefs.setString(
-                                  'email',
-                                  context
-                                      .read<AddTouristCubit>()
-                                      .touristEmailController
-                                      .text);
-                              await prefs.setString(
-                                  'phoneNumber',
-                                  context
-                                      .read<AddTouristCubit>()
-                                      .touristPhoneNumberController
-                                      .text);
-
-                              // Navigate to Profile page after saving data
-                              if (context
-                                  .read<AddTouristCubit>()
-                                  .formKey
-                                  .currentState!
-                                  .validate()) {
+                              if (context.read<AddTouristCubit>().formKey.currentState!.validate()) {
                                 context.read<AddTouristCubit>().addTourist();
+
+                                String name = context.read<AddTouristCubit>().touristNameController.text;
+                                String phoneNumber = context.read<AddTouristCubit>().touristPhoneNumberController.text;
+                                String whatsAppNumber = context.read<AddTouristCubit>().whatsAppNumberController.text;
+                                String email = context.read<AddTouristCubit>().touristEmailController.text;
+                                String date = context.read<AddTouristCubit>().touristDateController.text;
+                                String countryCode = context.read<AddTouristCubit>().selectedCountryCodeController.text; // Fetch selected country code
+
+                                // Format message with country code before WhatsApp number
+                                String message = 'Name: $name\nPhone: $phoneNumber\nWhatsApp: $countryCode$whatsAppNumber\nEmail: $email\nDate: $date';
+
+                                // Replace with your actual WhatsApp number
+                                print('Tour guide phone number: ${widget.tourGuidePhoneNumber}');
+                                try {
+                                  String phoneNumberWithCountryCode = '+2${widget.tourGuidePhoneNumber}';
+                                  _launchWhatsApp(phoneNumberWithCountryCode, message);
+                                } catch (e) {
+                                  print('Error: $e');
+                                }
+
                               }
                             },
                           ),

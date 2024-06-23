@@ -15,25 +15,31 @@ class AddTouristCubit extends Cubit<TouristState> {
   TextEditingController touristPhoneNumberController = TextEditingController();
   TextEditingController whatsAppNumberController = TextEditingController();
   TextEditingController touristEmailController = TextEditingController();
+  TextEditingController touristDateController = TextEditingController();
+  TextEditingController selectedCountryCodeController = TextEditingController(); // Controller for country code
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   Future<void> addTourist() async {
     emit(TouristLoading());
     try {
-      bool exists = await _fireStoreServices.touristExists(touristPhoneNumberController.text);
-      if (exists) {
-        emit(TouristFailure(error: 'Tourist with this phone number already exists'));
-        return;
-      }
+      // Check if tourist with the same phone number already exists
+      // bool exists = await _fireStoreServices.touristExists(touristPhoneNumberController.text);
+      // if (exists) {
+      //   emit(TouristFailure(error: 'Tourist with this phone number already exists'));
+      // }
 
+      // Add tourist to Firestore
       await _fireStoreServices.addTourist(TourisModel(
-        email: touristEmailController.text,
-        whatsAppNumber: whatsAppNumberController.text,
         name: touristNameController.text,
         phoneNumber: touristPhoneNumberController.text,
+        whatsAppNumber: whatsAppNumberController.text,
+        email: touristEmailController.text,
+        date: touristDateController.text,
+        selectedCountryCode: selectedCountryCodeController.text, // Include selected country code
       ));
 
+      // Save tourist data to SharedPreferences
       await _saveToSharedPreferences(
         name: touristNameController.text,
         phoneNumber: touristPhoneNumberController.text,
