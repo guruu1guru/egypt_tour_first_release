@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:guru/Screens/succes_send_info_to_guide.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
 import 'package:intl/intl.dart'; // Import the intl package
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,26 +67,13 @@ class FormForRegisterTourist extends StatefulWidget {
 }
 
 class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
-  bool formSubmitted = false;
 
   @override
   void initState() {
     super.initState();
-    // checkFormSubmissionStatus();
   }
 
-  Future<void> checkFormSubmissionStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool submitted = prefs.getBool('formSubmitted') ?? false;
-    setState(() {
-      formSubmitted = submitted;
-    });
-  }
 
-  void saveFormSubmissionStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('formSubmitted', true);
-  }
 
   Future<void> _launchWhatsApp(String phoneNumber, String message) async {
     final Uri whatsappUri = Uri.parse(
@@ -100,10 +88,6 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    if (formSubmitted) {
-      return Container();
-    }
-
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -115,24 +99,9 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
         body: BlocListener<AddTouristCubit, TouristState>(
           listener: (context, state) {
             if (state is TouristLoading) {
-              showDialog(
-                context: context,
-                builder: (context) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
+
             } else if (state is TouristSuccess) {
               Navigator.pop(context);
-              saveFormSubmissionStatus();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ContactTourWithPhone(
-                    tourGuideName: widget.tourGuideName,
-                    tourGuidePhoneNumber: widget.tourGuidePhoneNumber,
-                  ),
-                ),
-              );
             } else if (state is TouristFailure) {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -286,7 +255,25 @@ class _FormForRegisterTouristState extends State<FormForRegisterTourist> {
                                 try {
                                   String phoneNumberWithCountryCode = '+2${widget.tourGuidePhoneNumber}';
                                   _launchWhatsApp(phoneNumberWithCountryCode, message);
-                                } catch (e) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Success(
+                                        touristDate: date,
+                                        touristEmail: email,
+                                        touristName: name,
+                                        touristPhoneNumber:phoneNumber ,
+                                        tourGuideName:
+                                        widget.tourGuideName,
+                                        tourGuidePhoneNumber: widget.tourGuidePhoneNumber,
+
+                                      ),
+                                    ),
+                                  );
+
+                                }
+
+                                catch (e) {
                                   print('Error: $e');
                                 }
 
